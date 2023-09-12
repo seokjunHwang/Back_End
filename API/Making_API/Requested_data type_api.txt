@@ -1,0 +1,11 @@
+MEASURED	varchar(30)	PRI	측정시간
+LATITUDE	varchar(30)	PRI	위도
+LONGITUDE	varchar(30)	PRI	경도
+TEMPERATURE	double	　	온도
+DPWT_DEPTH	double	　	수심
+PH	double	　	수소이온농도
+SP_COND	double	　	전도도
+HDO	double	　	광학용존산소
+TURBIDITY	double	　	탁도
+BG	double	　	남조류-피코시아닌
+CHL_A	double	　	클로로필a
