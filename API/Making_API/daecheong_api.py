@@ -9,8 +9,7 @@
 # Portforwarding으로 지정한 내부포트에 대한 외부포트포워딩을 추가한다.
 
 # < 접근법 >
-# ecobotdashboard1.co.kr:25000/water_quality   ( ecobotdashboard1 = 에코피스 외부아이피 )
-# 또는 외부아이피:25000/water_quality로 접근 ( http://125.136.64.124:25000/water-quality )
+# http://외부아이피:외부포트/water_quality 로 접근 
 
 from flask import Flask, jsonify
 from flask_restful import Resource, Api
@@ -18,8 +17,9 @@ import psycopg2
 import threading
 import time
 
-app = Flask(__name__)
-api = Api(app)
+
+app = Flask(__name__) # Flask 어플리케이션을 초기화 및 생성한다. 즉, 시작점을 알린다.
+api = Api(app) # app에 RESTful API 기능을 추가한다. : 추후, api.add_resource()같은 메서드로 설정할 수 있게 기능들을 부여한다.
 
 # psql에서 데이터불러와서 형식변환
 def fetch_data():
@@ -64,18 +64,21 @@ def update_data_every_10_seconds():
         global_data = fetch_data()
         time.sleep(10)
 
+# 클래스 WaterQuality로 Flask라이브러리의 클래스인 Resource를 상속받는다.
+# 이는  HTTP 메서드(예: GET, POST, PUT, DELETE 등)에 응답할 수 있는 기능을 한다.
+# 추후, http로 GET을 요청하면 get메서드가 이에 응답하여 json형태의 데이터를 제공한다.
 class WaterQuality(Resource):
     def get(self):
         return jsonify(global_data)
 
 # /water_quality : api 접근할때 메시지토픽
 api.add_resource(WaterQuality, '/water_quality')
-
-# https주소창에서 /water-quality를 엔드포인트로 접근하면 최신의 데이터가 반환됩니다.
-# http://125.136.64.124:25000/water-quality  -->  외부에서 접근하니까 http://외부ip/외부port/엔드포인트
+# https주소창에서 /water-quality를 엔드포인트로 접근하면 WaterQuality리소스가 실행 -> 최신의 데이터가 반환된다.
+# 외부에서 접근하니까 http://외부ip/외부port/엔드포인트
 
 if __name__ == '__main__':
     thread = threading.Thread(target=update_data_every_10_seconds)
+    # update_data_every_10_seconds 함수를 별도의 스레드에서 실행. 이렇게 하면 Flask 앱이 작동하는 동안에도 데이터베이스에서 물질 데이터를 주기적으로 가져올 수 있다.
     thread.start()
     app.run(host='0.0.0.0', debug=True) # flask api 내부포트 디폴트 값 = 5000
     # host = 0.0.0.0 : 모든 아이피에서 접근가능하게 설정
